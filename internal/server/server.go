@@ -1,6 +1,7 @@
 package server
 
 import (
+	"fmt"
 	"log"
 	"net/http"
 	"time"
@@ -34,5 +35,6 @@ func NewServer(logger *log.Logger) *Server {
 
 // Метод для запуска сервера
 func (s *Server) Start() error {
+	fmt.Println("Starting server on: 8080")
 	return s.srv.ListenAndServe()
 }
