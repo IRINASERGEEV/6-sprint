@@ -21,18 +21,20 @@ func UploadHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	file, _, err := r.FormFile("file")
-	if err != nil {
-		http.Error(w, r.PostFormValue("file"), http.StatusOK)
-		return
-	}
-	defer file.Close()
+	//file, _, err := r.FormFile("file")
+	//if err != nil {
+	//	http.Error(w, r.Form.Get ("file"), http.StatusOK)
+	//	return
+	//}
+	//defer file.Close()
+	//w.Write(data)
 
 	data, err := io.ReadAll(file)
 	if err != nil {
-		http.Error(w, "Unable to read file", http.StatusBadRequest)
+		http.Error(w, "Unable to read file", http.StatusOK)
 		return
 	}
+	w.Write(data)
 
 	result, err := service.Convert(string(data))
 	if err != nil {
