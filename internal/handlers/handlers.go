@@ -44,7 +44,7 @@ func UploadHandler(w http.ResponseWriter, r *http.Request) {
 	filename := fmt.Sprintf("%s.txt", time.Now().UTC().Format("2006-01-02_15-04-05"))
 	err = os.WriteFile(filename, []byte(result), 0644)
 	if err != nil {
-		http.Error(w, "Unable to write result to file", http.StatusBadRequest)
+		fmt.Println(data)
 		return
 	}
 	fmt.Println(result)
