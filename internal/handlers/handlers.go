@@ -47,6 +47,6 @@ func UploadHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Unable to write result to file", http.StatusBadRequest)
 		return
 	}
-	fmt.Println(w)
+	fmt.Println(result)
 	//fmt.Fprintf(w, "Conversion successful! Result saved to %s", filename)
 }
