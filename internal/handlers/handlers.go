@@ -5,6 +5,7 @@ import (
 	"io"
 	"net/http"
 	"os"
+	"path/filepath"
 	"time"
 
 	"github.com/Yandex-Practicum/go1fl-sprint6-final/internal/service"
@@ -12,44 +13,51 @@ import (
 
 // Парсим html-форму из файла index.html
 func IndexHandler(w http.ResponseWriter, r *http.Request) {
-	http.ServeFile(w, r, "index.html")
-}
-
-// Получаем файл из формы и закрываем
-func UploadHandler(w http.ResponseWriter, r *http.Request) {
-	if r.Method != http.MethodPost {
-		http.Error(w, "Invalid request method", http.StatusBadRequest)
-		return
-	}
-
-	file, _, err := r.FormFile("file")
+	file, err := os.Open("index.html")
 	if err != nil {
-		fmt.Println(w)
+		http.Error(w, "Failed to open file", http.StatusInternalServerError)
 		return
 	}
 	defer file.Close()
 
-	//Читаем данные из файла
+	w.Header().Set("Content-Type", "text/html")
+	w.WriteHeader(http.StatusOK)
+	io.Copy(w, file)
+}
+
+func UploadHandler(w http.ResponseWriter, r *http.Request) {
+	err := r.ParseMultipartForm(10 << 20)
+	if err != nil {
+		http.Error(w, "Error in form", http.StatusInternalServerError)
+		return
+	}
+
+	file, header, err := r.FormFile("myFile")
+	if err != nil {
+		http.Error(w, "Failed to get file", http.StatusInternalServerError)
+	}
+	defer file.Close()
+
 	data, err := io.ReadAll(file)
 	if err != nil {
-		http.Error(w, "Unable to read file", http.StatusBadRequest)
+		http.Error(w, "Error reading file", http.StatusInternalServerError)
 		return
 	}
 
-	//Передаем данные в функцию конвертации и получаем результат конвертации
-	result, err := service.Convert(string(data))
+	converted, err := service.Convert(string(data))
 	if err != nil {
-		fmt.Println(string(data))
-		return
+		http.Error(w, "Conversion error", http.StatusInternalServerError)
 	}
 
-	//Записываем в локальный файл результат конвертации строки
-	filename := fmt.Sprintf("%s.txt", time.Now().UTC().Format("2006-01-02_15-04-05"))
-	err = os.WriteFile(filename, []byte(result), 0644)
-	if err != nil {
-		fmt.Println(string(data))
+	ext := filepath.Ext(header.Filename)
+	t := time.Now().UTC().Format("01022006_150405")
+	filename := fmt.Sprintf("%s%s", t, ext)
+
+	if err := os.WriteFile(filename, []byte(converted), 0644); err != nil {
+		http.Error(w, "Error writing file", http.StatusInternalServerError)
 		return
 	}
-	fmt.Println(result)
-	//fmt.Fprintf(w, "Conversion successful! Result saved to %s", filename)
+	w.Header().Set("Content-Type", "text/plain")
+	w.WriteHeader(http.StatusOK)
+	w.Write([]byte(converted))
 }
