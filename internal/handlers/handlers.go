@@ -23,7 +23,7 @@ func UploadHandler(w http.ResponseWriter, r *http.Request) {
 
 	file, _, err := r.FormFile("file")
 	if err != nil {
-		http.Error(w, "", http.StatusOK)
+		fmt.Println(w)
 		return
 	}
 	defer file.Close()
