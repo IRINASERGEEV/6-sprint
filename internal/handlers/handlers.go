@@ -17,27 +17,33 @@ func IndexHandler(w http.ResponseWriter, r *http.Request) {
 // Хендлер для эндпоинта /upload
 func UploadHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
-		http.Error(w, "Invalid request method", http.StatusInternalServerError)
+		http.Error(w, "Invalid request method", http.StatusBadRequest)
 		return
 	}
 
 	file, _, _ := r.FormFile("file")
+	data, err := io.ReadAll(file)
+	if err != nil {
+		http.Error(w, "Unable to read file", http.StatusBadRequest)
+		return
+	}
+	w.Write(data)
 	//if err != nil {
 	//	fmt.Println(w)
 	//	return
 	//}
 	defer file.Close()
 
-	data, err := io.ReadAll(file)
-	if err != nil {
-		http.Error(w, "Unable to read file", http.StatusInternalServerError)
-		return
-	}
-	w.Write(data)
+	//data, err := io.ReadAll(file)
+	//if err != nil {
+	//	http.Error(w, "Unable to read file", http.StatusBadRequest)
+	//	return
+	//}
+	//w.Write(data)
 
 	result, err := service.Convert(string(data))
 	if err != nil {
-		http.Error(w, "Conversion error", http.StatusInternalServerError)
+		http.Error(w, "Conversion error", http.StatusBadRequest)
 		return
 	}
 
